@@ -6,12 +6,18 @@ public:
 	DyMechicalAPI(void)
 	{
 		m_pCom=NULL;
+		m_AD = 0;
 		for (int i=0;i<48;i++)
 			m_Solen[i]=0;
 		for (int i=0;i<6;i++)
 			m_motorStatue[i]=0;
 		for (int i=0;i<8;i++)
-			m_platformStatue[i]=0;
+		{
+			m_platformStatue_IO1[i]=0;
+			m_platformStatue_IO2[i]=0;
+			m_platformStatue_IO3[i]=0;
+			m_sensorStatue[i]=0;
+		}	
 	}
 
 	~DyMechicalAPI(void)
@@ -23,8 +29,11 @@ private:
 	CnComm* m_pCom;
 	int m_Solen[48];
 	int m_motorStatue[6];
-	int m_platformStatue[8];
+	int m_platformStatue_IO1[8];
+	int m_platformStatue_IO2[8];
+	int m_platformStatue_IO3[8];
 	int m_sensorStatue[8];
+	double m_AD;
 
 private:
 	//内部函数
@@ -355,36 +364,7 @@ public:
 	//************************************
 	void getSolenStatue(int* SolenStatue)
 	{
-		memset(m_Solen,0,sizeof(int)*48);
-		unsigned char t_cmd[4];
-		t_cmd[0] = 0x55;
-		t_cmd[1] = 0x02;
-		t_cmd[2] = 0xf7;
-		t_cmd[3] = 0xaa;
-		m_pCom->Write(t_cmd,4);
-		unsigned char t_rcv[9];
-		m_pCom->ReadPort(t_rcv,9);
-		if (t_rcv[0] == 0x55
-			&&t_rcv[8] == 0xaa){
-				for (int i=0;i<8;i++){
-					SolenStatue[i] = (t_rcv[2]>>i)&0x01;
-				}
-				for(int i=8;i<16;i++){
-					SolenStatue[i] = (t_rcv[3]>>(i-8))&0x01;
-				}
-				for (int i=16;i<24;i++){
-					SolenStatue[i] = (t_rcv[4]>>(i-16))&0x01;
-				}
-				for (int i=24;i<32;i++){
-					SolenStatue[i] = (t_rcv[5]>>(i-24))&0x01;
-				}
-				for (int i=32;i<40;i++){
-					SolenStatue[i] = (t_rcv[6]>>(i-32))&0x01;
-				}
-				for (int i=40;i<48;i++){
-					SolenStatue[i] = (t_rcv[7]>>(i-40))&0x01;
-				}
-		}
+		CopyMemory(SolenStatue,m_Solen,sizeof(int)*6);
 	}
 	//************************************
 	// Method:    getMotorStatue
@@ -398,31 +378,10 @@ public:
 	{
 		if (m_pCom==NULL)
 			return false;
-		unsigned char t_cmd[4];
-		t_cmd[0]=0x55;
-		t_cmd[1]=0x02;
-		t_cmd[2]=0xec;
-		t_cmd[3]=0xaa;
-		m_pCom->Write(t_cmd,4);
-		unsigned char t_Rcv[4];
-		m_pCom->Read(t_Rcv,4);
-		if (t_Rcv[0]==0x55
-			&&t_Rcv[1]==0x02
-			&&t_Rcv[3]==0xaa)
-		{
-			int t_Data=0;
-			t_Data=t_Rcv[2];
-			for (int i=0;i<6;i++)
-			{
-				m_motorStatue[i]=(t_Data>>i)&0x01;
-			}
-			CopyMemory(motorStatue,m_motorStatue,sizeof(int)*6);
-			return true;
-		}
-		else 
-		{
-			return false;
-		}
+		
+		CopyMemory(motorStatue,m_motorStatue,sizeof(int)*6);
+		
+		return true;
 	}
 	//************************************
 	// Method:    getPlatformStatue
@@ -437,87 +396,140 @@ public:
 	{
 		if (m_pCom==NULL)
 			return false;
-		if (PlatformNum<1||PlatformNum>3)
-			return false;
-		unsigned char t_cmd[5];
-		t_cmd[0]=0x55;
-		t_cmd[1]=0x03;
-		t_cmd[2]=0xee;
-		t_cmd[3]=PlatformNum;
-		t_cmd[4]=0xaa;
-		m_pCom->Write(t_cmd,5);
-		unsigned char t_Rcv[4];
-		m_pCom->Read(t_Rcv,4);
-		if (t_Rcv[0]==0x55
-			&&t_Rcv[1]==0x02
-			&&t_Rcv[3]==0xaa)
+		
+		switch(PlatformNum)
 		{
-			int t_Data=0;
-			t_Data=t_Rcv[2];
-			for (int i=0;i<8;i++)
+		case 0:
 			{
-				m_platformStatue[i]=(t_Data>>i)&0x01;
+				CopyMemory(platformStatue,m_platformStatue_IO1,sizeof(int)*8);
+				break;
 			}
-			CopyMemory(platformStatue,m_platformStatue,sizeof(int)*8);
-			return true;
+		case 1:
+			{
+				CopyMemory(platformStatue,m_platformStatue_IO2,sizeof(int)*8);
+				break;
+			}
+		case 2:
+			{
+				CopyMemory(platformStatue,m_platformStatue_IO3,sizeof(int)*8);
+				break;
+			}
+		default:
+				break;
 		}
-		else
-		{
-			return false;
-		}
+		
+		return true;
 	}
 
+	//************************************
+	// Method:    getSensorStatue
+	// FullName:  DyMechicalAPI::getSensorStatue
+	// Access:    public 
+	// Returns:   bool
+	// Qualifier: 获取IO量传感器IO值
+	// Parameter: int * SensorStatue
+	//************************************
 	bool getSensorStatue(int* SensorStatue)
 	{
 		if (m_pCom==NULL)
 			return false;
-		unsigned char t_cmd[4];
-		t_cmd[0]=0x55;
-		t_cmd[1]=0x02;
-		t_cmd[2]=0xf9;
-		t_cmd[3]=0xaa;
-		m_pCom->Write(t_cmd,4);
-		unsigned char t_Rcv[4];
-		m_pCom->Read(t_Rcv,4);
-		if (t_Rcv[0]==0x55
-			&&t_Rcv[1]==0x02
-			&&t_Rcv[3]==0xaa)
-		{
-			int t_Data=0;
-			t_Data=t_Rcv[2];
-			for (int i=0;i<8;i++)
-			{
-				m_sensorStatue[i]=(t_Data>>i)&0x01;
-			}
-			CopyMemory(SensorStatue,m_sensorStatue,sizeof(int)*8);
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		
+		CopyMemory(SensorStatue,m_sensorStatue,sizeof(int)*8);
+
+		return true;
 	}
 
+	//************************************
+	// Method:    GetADSensor
+	// FullName:  DyMechicalAPI::GetADSensor
+	// Access:    public 
+	// Returns:   bool
+	// Qualifier: 获取AD量传感器AD值
+	// Parameter: double & value
+	//************************************
 	bool GetADSensor(double& value)
 	{
+		if (m_pCom==NULL)
+			return false;
+
+		value = m_AD;
+
+		return true;
+	}
+
+	//************************************
+	// Method:    rcvInit
+	// FullName:  DyMechicalAPI::rcvInit
+	// Access:    public 
+	// Returns:   bool
+	// Qualifier: 初始化数据接收
+	// Parameter: void
+	//************************************
+	bool rcvInit(void)
+	{
+		if (m_pCom==NULL)
+			return false;
+
 		unsigned char t_cmd[4];
 		t_cmd[0] = 0x55;
 		t_cmd[1] = 0x02;
-		t_cmd[2] = 0xf8;
+		t_cmd[2] = 0xf6;
 		t_cmd[3] = 0xaa;
 		m_pCom->Write(t_cmd,4);
-		unsigned char t_rcv[5];
-		m_pCom->Read(t_rcv,5);
-		if (t_rcv[0]==0x55
-			&&t_rcv[1]==0x03
-			&&t_rcv[4]==0xaa){
-				value = ((double)(t_rcv[2]*256+t_rcv[3]))*4096.0/3300.0;
+		unsigned char t_rcv[16];
+		m_pCom->Read(t_rcv,16);
+		if (t_rcv[0] == 0x55
+			&&t_rcv[1] == 0x0e
+			&&t_rcv[15] == 0xaa){
+				//AD
+				m_AD = ((double)(t_rcv[2]*256+t_rcv[3]))*4096.0/3300.0;
+				//Sensor Statue
+				int t_Data_SensorStatue = 0;
+				t_Data_SensorStatue = t_rcv[4];
+				for (int i=0;i<8;i++)
+					m_sensorStatue[i]=(t_Data_SensorStatue>>i)&0x01;
+				//IO1|IO2|IO3
+				int t_Data_IO1 = 0;
+				int t_Data_IO2 = 0;
+				int t_Data_IO3 = 0;
+				t_Data_IO1 = t_rcv[5];
+				t_Data_IO2 = t_rcv[6];
+				t_Data_IO3 = t_rcv[7];
+				for (int i=0;i<8;i++)
+					m_platformStatue_IO1[i] = (t_Data_IO1>>i)&0x01;
+				for (int i=0;i<8;i++)
+					m_platformStatue_IO2[i] = (t_Data_IO2>>i)&0x01;
+				for (int i=0;i<8;i++)
+					m_platformStatue_IO3[i] = (t_Data_IO3>>i)&0x01;
+				//Motor Statue
+				int t_Data_MotorStatue = 0;
+				t_Data_MotorStatue = t_rcv[8];
+				for (int i=0;i<6;i++)
+					m_motorStatue[i] = (t_Data_MotorStatue>>i)&0x01;
+				//Solen Statue
+				for (int i=0;i<8;i++){
+					m_Solen[i] = (t_rcv[9]>>i)&0x01;
+				}
+				for(int i=8;i<16;i++){
+					m_Solen[i] = (t_rcv[10]>>(i-8))&0x01;
+				}
+				for (int i=16;i<24;i++){
+					m_Solen[i] = (t_rcv[11]>>(i-16))&0x01;
+				}
+				for (int i=24;i<32;i++){
+					m_Solen[i] = (t_rcv[12]>>(i-24))&0x01;
+				}
+				for (int i=32;i<40;i++){
+					m_Solen[i] = (t_rcv[13]>>(i-32))&0x01;
+				}
+				for (int i=40;i<48;i++){
+					m_Solen[i] = (t_rcv[14]>>(i-40))&0x01;
+				}
+				
+				return true;
 		}
 		else
-		{
 			return false;
-		}
-		return true;
 	}
 };
 

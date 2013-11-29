@@ -154,4 +154,13 @@ extern "C"
 	// Parameter: double & value
 	//************************************
 	DYMECHNICALPLATFORM_API bool API_getADSensor(double& value);
+	//************************************
+	// Method:    API_RcvInit
+	// FullName:  API_RcvInit
+	// Access:    public 
+	// Returns:   DYMECHNICALPLATFORM_API bool
+	// Qualifier: 数据接收初始化
+	// Parameter: void
+	//************************************
+	DYMECHNICALPLATFORM_API bool API_RcvInit(void);
 };

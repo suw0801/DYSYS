@@ -116,3 +116,10 @@ DYMECHNICALPLATFORM_API bool API_getADSensor( double& value )
 		return false;
 	return gv_API->GetADSensor(value);
 }
+
+DYMECHNICALPLATFORM_API bool API_RcvInit( void )
+{
+	if (gv_API==NULL)
+		return false;
+	return gv_API->rcvInit();
+}
