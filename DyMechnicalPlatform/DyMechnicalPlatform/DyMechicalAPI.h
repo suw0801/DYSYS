@@ -364,7 +364,7 @@ public:
 	//************************************
 	void getSolenStatue(int* SolenStatue)
 	{
-		CopyMemory(SolenStatue,m_Solen,sizeof(int)*6);
+		CopyMemory(SolenStatue,m_Solen,sizeof(int)*48);
 	}
 	//************************************
 	// Method:    getMotorStatue
