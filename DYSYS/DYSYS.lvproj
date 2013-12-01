@@ -38,8 +38,15 @@
 			<Item Name="Waveform Chart.ctl" Type="VI" URL="../BlueControl85.llb/Waveform Chart.ctl"/>
 			<Item Name="Waveform Graph.ctl" Type="VI" URL="../BlueControl85.llb/Waveform Graph.ctl"/>
 		</Item>
+		<Item Name="Check.vi" Type="VI" URL="../Check.vi"/>
+		<Item Name="CheckTure.vi" Type="VI" URL="../CheckTure.vi"/>
 		<Item Name="InitConfig.vi" Type="VI" URL="../InitConfig.vi"/>
 		<Item Name="mainui.vi" Type="VI" URL="../mainui.vi"/>
+		<Item Name="QueueMotorStart.vi" Type="VI" URL="../QueueMotorStart.vi"/>
+		<Item Name="QueueSolenAct.vi" Type="VI" URL="../QueueSolenAct.vi"/>
+		<Item Name="QueueSolenAdv.vi" Type="VI" URL="../QueueSolenAdv.vi"/>
+		<Item Name="ThridPlatX.vi" Type="VI" URL="../ThridPlatX.vi"/>
+		<Item Name="ThridPlatY.vi" Type="VI" URL="../ThridPlatY.vi"/>
 		<Item Name="依赖关系" Type="Dependencies">
 			<Item Name="vi.lib" Type="Folder">
 				<Item Name="8.6CompatibleGlobalVar.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/config.llb/8.6CompatibleGlobalVar.vi"/>
